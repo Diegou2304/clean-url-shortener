@@ -6,12 +6,13 @@ namespace UrlShortener.Infrastructure.Services.Bitly
 {
     public class BitlyUrlShortenerService : IUrlShortenerService  
     {
-        private readonly HttpClient _httpClient;
-
-        public BitlyUrlShortenerService(HttpClient client)
+        private readonly IHttpClientFactory _httpClientFactory;
+     
+        public BitlyUrlShortenerService(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = client;
+            _httpClientFactory = httpClientFactory;
         }
+       
 
         public async Task<string> GenerateShortedUrlAsync(string url)
         {
@@ -23,14 +24,15 @@ namespace UrlShortener.Infrastructure.Services.Bitly
             };
             var json = JsonConvert.SerializeObject(bitlySettings);
             var data = new StringContent(json, Encoding.UTF8, "application/json");
-            var shortenedUrl = await _httpClient
+            var httpClient = _httpClientFactory.CreateClient("BitlyClient");
+            var shortenedUrl = await httpClient
                 .PostAsync("/v4/shorten", data);
 
             var responseStringContent = shortenedUrl.Content.ReadAsStringAsync().Result;
 
             BitlyUrlData response = JsonConvert.DeserializeObject<BitlyUrlData>(responseStringContent);
 
-            return response.long_url;
+            return response.Id;
         }
     }
 }

@@ -38,7 +38,7 @@ namespace UrlShortener.Application.Url.ShortUrl
             var targetUrl = new Domain.Url
             {
                 targetUrl = url.targetUrl,
-                ShortenedUrl = shorterUrl.ToString()
+                ShortenedUrl = shorterUrl
             };
 
             var urlRequest = new Requests

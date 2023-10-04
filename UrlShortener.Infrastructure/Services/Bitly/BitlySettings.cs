@@ -9,7 +9,7 @@ namespace UrlShortener.Infrastructure.Services.Bitly
         public string domain { get; set; } = string.Empty;
     }
 
-    public class BitlyUrlData : BaseServiceResponse
+    public class BitlyUrlData
     {
         public DateTime CreatedAt { get; set; }
         public string Id { get; set; }
