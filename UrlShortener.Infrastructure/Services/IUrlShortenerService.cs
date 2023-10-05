@@ -4,6 +4,6 @@ namespace UrlShortener.Application.Url.Utils.UrlShortener
 {
     public interface IUrlShortenerService
     {
-        public Task<string> GenerateShortedUrlAsync(string url);
+        public Task<BaseServiceResponse> GenerateShortedUrlAsync(string url);
     }
 }

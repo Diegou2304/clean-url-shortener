@@ -10,5 +10,14 @@ namespace UrlShortener.Domain
         public List<Requester> Requesters { get; } = new();
         public List<Requests> Requests { get; } = new();
 
+        public static Url Create(string targetUrl, string ShortenedUrl)
+        {
+            var url = new Url
+            {
+                targetUrl = targetUrl,
+                ShortenedUrl = ShortenedUrl
+            };
+            return url;
+        }
     }
 }
