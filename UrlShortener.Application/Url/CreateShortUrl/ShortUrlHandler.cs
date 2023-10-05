@@ -28,36 +28,50 @@ namespace UrlShortener.Application.Url.ShortUrl
           
             var url = _mapper.Map<UrlCommand>(request.Url);
             var requesterCommand = _mapper.Map<RequesterCommand>(request.Requester); 
-            var registeredRequester = await _requestRepository.GetRequesterByEmail(requesterCommand.Email) ?? new Requester(requesterCommand.Name, requesterCommand.Email);
+            var registeredRequester = await _requestRepository.GetRequesterByEmail(requesterCommand.Email) 
+                                                                ?? new Requester(requesterCommand.Name, requesterCommand.Email);
 
             IUrlShortenerService urlShortenerProvider =  GetUrlShortenerProvider(request.UrlShortererProvider);
 
-            string shorterUrl = await urlShortenerProvider.GenerateShortedUrlAsync(url.targetUrl);
+            var shorterUrl = await urlShortenerProvider.GenerateShortedUrlAsync(url.targetUrl);
 
-
-            var targetUrl = new Domain.Url
+            if (shorterUrl.StatusCode is 200 || shorterUrl.StatusCode is 201)
             {
-                targetUrl = url.targetUrl,
-                ShortenedUrl = shorterUrl
-            };
+                var targetUrl = new Domain.Url
+                {
+                    targetUrl = url.targetUrl,
+                    ShortenedUrl = (shorterUrl as SuccessfulResponse)?.ShortUrl
+                };
 
-            var urlRequest = new Requests
+                var urlRequest = new Requests
+                {
+
+                    Url = targetUrl,
+                    Requester = registeredRequester
+                };
+
+                urlRequest.SetGuid();
+
+                await _requestRepository.AddAsync(urlRequest);
+
+                return new CreateShortUrlSucessfullResult
+                {
+                    StatusCode = shorterUrl.StatusCode,
+                    LongUrl = (shorterUrl as SuccessfulResponse)?.LongUrl,
+                    ShortUrl = (shorterUrl as SuccessfulResponse)?.ShortUrl
+                };
+
+            }
+            else
             {
-
-                Url = targetUrl,
-                Requester = registeredRequester
-            };
-
-            urlRequest.SetGuid();
-
-            await _requestRepository.AddAsync(urlRequest);
-
-
-            return new CreateShortUrlResult
-            {
-                Url = shorterUrl
-
-            };
+                return new CreateShortUrlErrorResult
+                {
+                    StatusCode = shorterUrl.StatusCode,
+                    ErrorCode = (int)((shorterUrl as ErrorResponse)?.ErrorCode),
+                    Message = (shorterUrl as ErrorResponse)?.Message
+                };
+            }
+           
 
         }
 

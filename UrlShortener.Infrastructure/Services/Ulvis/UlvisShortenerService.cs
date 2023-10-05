@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Azure;
+using Newtonsoft.Json;
 using UrlShortener.Application.Url.Utils.UrlShortener;
 
 
@@ -16,7 +17,7 @@ namespace UrlShortener.Infrastructure.Services.Ulvis
 
 
         }
-        public async Task<string> GenerateShortedUrlAsync(string url)
+        public async Task<BaseServiceResponse> GenerateShortedUrlAsync(string url)
         {
 
             var ulvisSettings = new UlvisSettings
@@ -26,13 +27,35 @@ namespace UrlShortener.Infrastructure.Services.Ulvis
 
             var _httpClient = _httpClientFactory.CreateClient("UlvisClient");
             var shortenedUrl = await _httpClient
-                                    .GetStringAsync($"/API/write/get?url={ulvisSettings.Url}");
+                                    .GetAsync($"/API/write/get?url={ulvisSettings.Url}");
+            var result = shortenedUrl.Content.ReadAsStringAsync().Result;
+            UlvisServiceResponse response = JsonConvert
+                .DeserializeObject<UlvisServiceResponse>(result);
 
-            UlvisServiceResponse response = JsonConvert.DeserializeObject<UlvisServiceResponse>(shortenedUrl);
 
 
 
-            return response.data.url;
+            return MapToBaseServiceResponse(response);
+        }
+
+        private BaseServiceResponse MapToBaseServiceResponse(UlvisServiceResponse ulvisResponse)
+        {
+            if (ulvisResponse.success)
+            {
+                return new SuccessfulResponse
+                {
+                    StatusCode = 200,
+                    LongUrl = ulvisResponse.data.full,
+                    ShortUrl = ulvisResponse.data.url
+                };
+            }
+
+            return new ErrorResponse
+            {
+                StatusCode = 400,
+                ErrorCode = ulvisResponse.error.code,
+                Message = ulvisResponse.error.msg
+            };
         }
     }
 }

@@ -15,10 +15,18 @@ namespace UrlShortener.Infrastructure.Services.Bitly
         public string Id { get; set; }
         public string link { get; set; }
         public string long_url { get; set; }
-        public bool Archived { get; set; }
-       
+        public bool Archived { get; set; } 
+        public IEnumerable<BitlyErrorResponse> errors { get; set; }
 
     }
+
+    public class BitlyErrorResponse
+    {
+        public string error_code { get; set; }
+        public string field { get; set; }
+        public string message { get; set; } 
+    }
+ 
     public class References
     {
         public string Group { get; set; }
