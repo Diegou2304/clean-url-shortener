@@ -37,22 +37,15 @@ namespace UrlShortener.Application.Url.ShortUrl
 
             if (shorterUrl.StatusCode is 200 || shorterUrl.StatusCode is 201)
             {
-                var targetUrl = new Domain.Url
-                {
-                    targetUrl = url.targetUrl,
-                    ShortenedUrl = (shorterUrl as SuccessfulResponse)?.ShortUrl
-                };
+              
 
-                var urlRequest = new Requests
-                {
+                var targetUrl = Domain.Url.Create(url.targetUrl, (shorterUrl as SuccessfulResponse)?.ShortUrl);
+                var newRequest = Requests.Create(targetUrl, registeredRequester);
 
-                    Url = targetUrl,
-                    Requester = registeredRequester
-                };
 
-                urlRequest.SetGuid();
+                newRequest.SetGuid();
 
-                await _requestRepository.AddAsync(urlRequest);
+                await _requestRepository.AddAsync(newRequest);
 
                 return new CreateShortUrlSucessfullResult
                 {

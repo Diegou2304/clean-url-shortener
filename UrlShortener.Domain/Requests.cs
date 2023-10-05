@@ -27,5 +27,16 @@ namespace UrlShortener.Domain
 
         }
 
+        public static Requests Create(Url targetUrl, Requester requester)
+        {
+            var newRequest = new Requests
+            {
+                Url = targetUrl,
+                Requester = requester
+            };
+
+            return newRequest;
+
+        }
     }
 }
